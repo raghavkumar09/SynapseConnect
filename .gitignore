@@ -1,0 +1,6 @@
+/backend/node_moddules
+/backend/*.env
+
+
+/frontend/node_moddules
+/frontend/*.env
