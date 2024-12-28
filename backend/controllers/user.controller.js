@@ -12,6 +12,8 @@ export const createUserController = async (req, res) => {
         const user = await userService.createUser(req.body);
 
         const token = user.generateToken();
+
+        delete user._doc.password;
         res.status(201).json({ user, token });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -57,6 +59,20 @@ export const logoutController = async (req, res) => {
         await redisClient.set(token, "logout", "EX", 60 * 60 * 24); // 1 day
         
         res.status(200).json({ message: "Logout successful" });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+}
+
+export const getAllUsersController = async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+        const users = await userService.getAllUsers({ userId: req.user._id });
+        res.status(200).json({ users });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
