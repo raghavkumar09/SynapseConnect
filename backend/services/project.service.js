@@ -42,8 +42,10 @@ export const addUserToProject = async (projectId, users, userId) => {
 
     const project = await projectModel.findOne({
         _id: projectId,
-        users: { $ne: userId }
+        users: userId
     });
+
+    console.log("Project: ", project);
 
     if(!project) {
         throw new Error("User is not a member of the project");
