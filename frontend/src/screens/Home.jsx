@@ -1,6 +1,7 @@
-import React, { useContext, useState } from 'react'
+import React, { useContext, useState, useEffect } from 'react'
 import { UserContext } from '../context/user.context'
 import axiosInstance from '../config/axios';
+import { useNavigate } from 'react-router-dom';
 
 function Home() {
 
@@ -8,13 +9,30 @@ function Home() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [projectName, setProjectName] = useState(null);
+  const [projects, setProjects] = useState([]);
+
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const response = await axiosInstance.get('/projects/all'); // await added here
+        console.log(response.data.allUserProject);
+        setProjects(response.data.allUserProject);
+      } catch (error) {
+        console.log("Error getting projects:", error);
+      }
+    };
+
+    fetchProjects(); // Call the async function
+  }, [user]);
 
   const handleCreateProject = async (e) => {
     e.preventDefault();
-    console.log({projectName});
+    console.log({ projectName });
 
     try {
-      const response = await axiosInstance.post('/projects/create', { name:projectName });
+      const response = await axiosInstance.post('/projects/create', { name: projectName });
       console.log(response.data);
       setIsModalOpen(false);
     } catch (error) {
@@ -24,13 +42,25 @@ function Home() {
 
   return (
     <main>
-      <div className="projects">
+      <div className="projects flex flex-wrap gap-3 p-5 items-center mx-auto">
         <button
           onClick={() => setIsModalOpen(true)}
           className="project p-4 border border-gray-500 rounded cursor-pointer hover:bg-gray-600">
           <i className="ri-link"></i>
           <span className="ml-2">New Project</span>
         </button>
+
+        {projects.map((project) => (
+          <div key={project._id}
+            onClick={() => navigate(`/project`, { state: { project } })}
+            className="project flex flex-col min-w-[200px] gap-4 p-4 border border-gray-500 rounded cursor-pointer hover:bg-gray-600 hover:text-white">
+            <span className="ml-2">{project.name}</span>
+            <div className="flex items-center">
+              <p><small> <i className="ri-user-line"></i> Collaborators </small>:</p>
+              <span className="ml-2">{project.users.length}</span>
+            </div>
+          </div>
+        ))}
       </div>
 
       {isModalOpen && (
