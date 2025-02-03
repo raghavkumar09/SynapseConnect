@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useRef } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import axiosInstance from '../config/axios';
 import { socketConnectionInit, sendMessage, receiveMessage } from '../config/socket';
@@ -13,6 +13,7 @@ function Project() {
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [project, setProject] = useState(location.state.project);
     const [messages, setMessages] = useState('');
+    const [messagesList, setMessagesList] = useState([]);
     const messagesRef = useRef(null);
 
     const { user } = useContext(UserContext);
@@ -39,7 +40,9 @@ function Project() {
                 sender: user,  // to send only id from the user not sent the whole user object
             });
             console.log("messages", messages);
-            appendOutgoingMessage(messages);
+            setMessagesList(prevMessages => [...prevMessages, { message: messages, sender: user }]);
+            scrollToBottom();
+            // appendOutgoingMessage(messages);
             setMessages('');
         }
     };
@@ -48,7 +51,10 @@ function Project() {
         socketConnectionInit(project._id);
 
         receiveMessage('project-message', data => {
-            appendIncommingMessage(data);
+            // appendIncommingMessage(data);
+            
+            setMessagesList(prevMessages => [...prevMessages, data]);
+            scrollToBottom();
         });
 
         const fetchProject = async () => {
@@ -63,37 +69,37 @@ function Project() {
         fetchProject();
     }, [location.state.project._id, project._id]);
 
-    const appendIncommingMessage = (messageObj) => {
-        console.log("messageObj", messageObj);
-        if (messagesRef.current) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'incoming-message max-w-56 bg-amber-200 p-2 rounded-md flex flex-col gap-2 w-fit';
-            messageDiv.innerHTML = `
-                <p class='text-xs opacity-45'>${messageObj.sender.email}</p>
-                <p class='text-sm'>${messageObj.message}</p>
-            `;
-            messagesRef.current.appendChild(messageDiv);
-            scrollToBottom();
-        } else {
-            console.error("messagesRef.current is not available.");
-        }
-    };
+    // const appendIncommingMessage = (messageObj) => {
+    //     console.log("messageObj", messageObj);
+    //     if (messagesRef.current) {
+    //         const messageDiv = document.createElement('div');
+    //         messageDiv.className = 'incoming-message max-w-56 bg-amber-200 p-2 rounded-md flex flex-col gap-2 w-fit';
+    //         messageDiv.innerHTML = `
+    //             <p class='text-xs opacity-45'>${messageObj.sender.email}</p>
+    //             <p class='text-sm'>${messageObj.message}</p>
+    //         `;
+    //         messagesRef.current.appendChild(messageDiv);
+    //         scrollToBottom();
+    //     } else {
+    //         console.error("messagesRef.current is not available.");
+    //     }
+    // };
 
-    const appendOutgoingMessage = (message) => {
-        console.log("appendOutgoingMessage", message);
-        if (messagesRef.current) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = 'outgoing-message max-w-56 bg-amber-200 p-2 rounded-md flex flex-col gap-2 w-fit ml-auto';
-            messageDiv.innerHTML = `
-                <p class='text-xs opacity-45'>${user.email}</p>
-                <p class='text-sm'>${message}</p>
-            `;
-            messagesRef.current.appendChild(messageDiv);
-            scrollToBottom();
-        } else {
-            console.error("messagesRef.current is not available.");
-        }
-    };
+    // const appendOutgoingMessage = (message) => {
+    //     console.log("appendOutgoingMessage", message);
+    //     if (messagesRef.current) {
+    //         const messageDiv = document.createElement('div');
+    //         messageDiv.className = 'outgoing-message max-w-56 bg-amber-200 p-2 rounded-md flex flex-col gap-2 w-fit ml-auto';
+    //         messageDiv.innerHTML = `
+    //             <p class='text-xs opacity-45'>${user.email}</p>
+    //             <p class='text-sm'>${message}</p>
+    //         `;
+    //         messagesRef.current.appendChild(messageDiv);
+    //         scrollToBottom();
+    //     } else {
+    //         console.error("messagesRef.current is not available.");
+    //     }
+    // };
 
     const handleUserSelect = (userId) => {
         setSelectedUsers((prevSelected) => {
@@ -121,8 +127,10 @@ function Project() {
     };
 
     const scrollToBottom = () => {
-        messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        messagesRef.current.scrollTop = messagesRef.current?.scrollHeight;
     };
+
+
 
     return (
         <main className='h-screen w-screen flex'>
@@ -138,6 +146,18 @@ function Project() {
                 </header>
                 <div className="conversation-area pt-14 pb-10 flex-grow flex flex-col h-full relative">
                     <div ref={messagesRef} className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full no-scrollbar">
+                    {messagesList.map((msg, index) => (
+                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'max-w-52'} ${msg.sender._id == user._id.toString() && 'ml-auto'}  message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}>
+                                <small className='opacity-65 text-xs'>{msg.sender.email}</small>
+                                <div className='text-sm '>
+                                    {msg.sender._id === 'ai' ?
+                                        <p>{msg.message}</p>
+                                        :
+                                        <p>{msg.message}</p>
+                                    }
+                                </div>
+                            </div>
+                        ))}
                     </div>
                     
                     <div className="inputArea flex w-full absolute bottom-0">

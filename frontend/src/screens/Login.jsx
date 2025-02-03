@@ -1,4 +1,4 @@
-import React, { useState, useContext } from 'react';
+import { useState, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axiosInstance from '../config/axios';
 import { UserContext } from '../context/user.context';
@@ -64,7 +64,7 @@ function Login() {
           </button>
         </form>
         <p className="text-sm text-gray-600 mt-4">
-          Don't have an account? <Link to="/register" className="text-blue-900 hover:text-blue-700">Create an account</Link>
+          Don&apos;t have an account? <Link to="/register" className="text-blue-900 hover:text-blue-700">Create an account</Link>
         </p>
       </div>
     </div>
