@@ -130,12 +130,10 @@ function Project() {
         messagesRef.current.scrollTop = messagesRef.current?.scrollHeight;
     };
 
-
-
     return (
-        <main className='h-screen w-screen flex'>
-            <section className='relative left h-full min-w-80 bg-red-200 flex flex-col'>
-                <header className='w-full bg-slate-200 flex justify-between items-center p-2 px-4 absolute z-10 top-0'>
+        <main className='h-screen w-screen flex relative pt-14'>
+            <section className='relative left h-full md:w-1/2 w-full bg-white flex flex-col'>
+                <header className='w-full bg-gray-900 shadow-md flex justify-between items-center p-2 px-4 absolute z-10 top-0'>
                     <button className='flex justify-center items-center gap-1' onClick={() => setIsModalOpen(true)}>
                         <i className="ri-user-add-line"></i>
                         <p className='text-xs'>Collaborator</p>
@@ -147,7 +145,7 @@ function Project() {
                 <div className="conversation-area pt-14 pb-10 flex-grow flex flex-col h-full relative">
                     <div ref={messagesRef} className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full no-scrollbar">
                     {messagesList.map((msg, index) => (
-                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'max-w-52'} ${msg.sender._id == user._id.toString() && 'ml-auto'}  message flex flex-col p-2 bg-slate-50 w-fit rounded-md`}>
+                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'max-w-52'} ${msg.sender._id == user._id.toString() && 'ml-auto'}  message flex flex-col p-2 bg-gray-900 w-fit rounded-md`}>
                                 <small className='opacity-65 text-xs'>{msg.sender.email}</small>
                                 <div className='text-sm '>
                                     {msg.sender._id === 'ai' ?
@@ -164,7 +162,7 @@ function Project() {
                         <input
                             value={messages}
                             onChange={(e) => setMessages(e.target.value)}
-                            className='min-w-[85%] p-2 border-none outline-none'
+                            className='min-w-[85%] p-2 border-none outline-none bg-gray-800 text-white'
                             onKeyPress={(e) => {
                                 if (e.key === 'Enter') {
                                     handleSendMessage();
@@ -173,14 +171,14 @@ function Project() {
                             type="text" placeholder='Type a message' />
                         <button
                             onClick={handleSendMessage}
-                            className='bg-slate-500 flex-grow'>
-                            <i className="ri-send-plane-fill"></i>
+                            className='bg-green-600 flex-grow flex justify-center items-center'>
+                            <i className="ri-send-plane-fill text-gray-900 text-2xl"></i>
                         </button>
                     </div>
                 </div>
 
-                <div className={`side-pannel absolute w-full h-full bg-slate-100 animate ease-in-out duration-500 ${isSiePannel ? 'translate-x-0' : '-translate-x-full'}`}>
-                    <div className="crossButton w-full bg-slate-200 flex justify-between items-center p-2 px-4">
+                <div className={`side-pannel absolute w-full h-full bg-gray-600 animate ease-in-out duration-500 ${isSiePannel ? 'translate-x-0' : '-translate-x-full'}`}>
+                    <div className="crossButton w-full bg-gray-900 flex justify-between items-center p-2 px-4">
                         <h1 className='font-semibold'>Collaborators</h1>
                         <button className='p-2' onClick={() => setIsSiePannel(!isSiePannel)}>
                             <i className="ri-close-large-line"></i>
@@ -188,8 +186,8 @@ function Project() {
                     </div>
                     <div className='users flex flex-col gap-2 p-2'>
                         {project.users && project.users.map((user) => (
-                            <div key={user._id} className="user flex gap-2 justify-start items-center bg-slate-300 rounded-md p-2 w-full hover:bg-slate-400 cursor-pointer">
-                                <div className="avatar bg-slate-300 rounded-full flex justify-center items-center p-4 w-fit h-fit">
+                            <div key={user._id} className="user flex gap-2 justify-start items-center bg-gray-900 rounded-md p-2 w-full hover:bg-gray-500 cursor-pointer">
+                                <div className="avatar bg-gray-800 rounded-full flex justify-center items-center p-2 w-fit h-fit">
                                     <i className="ri-user-3-line absolute"></i>
                                 </div>
                                 <h2>{user.email}</h2>

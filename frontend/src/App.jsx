@@ -1,13 +1,19 @@
 import AppRoutes from './routes/AppRoutes'
 import { UserProvider } from './context/user.context'
+import { ThemeProvider } from "@/components/theme-provider"
+import Header from './components/header'
+import { BrowserRouter } from 'react-router-dom'
 
 function App() {
   return (
-    <div>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <UserProvider>
-        <AppRoutes />
+        <BrowserRouter>
+          <Header />
+          <AppRoutes />
+        </BrowserRouter>
       </UserProvider>
-    </div>
+    </ThemeProvider>
   )
 }
 
