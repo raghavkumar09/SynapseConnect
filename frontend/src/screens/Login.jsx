@@ -16,16 +16,24 @@ export default function LoginPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post('/users/login', { email, password });
-            console.log("Login response:", response.data);
+            const response = await axiosInstance.post('/users/login', {
+                payload: { email, password }
+            });
+
             localStorage.setItem('token', response.data.token);
-            setUser(response.data.user);
+            setUser(response.data.data);
+
+            if (!response.data.token || !response.data.data) {
+                console.error("Invalid response format:", response.data);
+                return;
+            }
             navigate('/');
         } catch (error) {
-            console.error("Error logging in:", error.response);
-            throw new Error(error.response.data.message);
+            console.error("Error logging in:", error);
+            alert(error.response?.data?.message || "Login failed");
         }
     };
+
     return (
         <main className='relative '>
             <div className="grid min-h-screen lg:grid-cols-2">

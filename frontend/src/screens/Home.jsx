@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from 'react'
+import { useContext, useState, useEffect } from 'react'
 import { UserContext } from '../context/user.context'
 import axiosInstance from '../config/axios';
 import { useNavigate } from 'react-router-dom';
@@ -12,14 +12,15 @@ function Home() {
     const [projectName, setProjectName] = useState(null);
     const [projects, setProjects] = useState([]);
 
+    console.log("Projects log", projects)
+
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchProjects = async () => {
             try {
-                const response = await axiosInstance.get('/projects/all'); // await added here
-                console.log(response.data.allUserProject);
-                setProjects(response.data.allUserProject);
+                const response = await axiosInstance.get('/projects/all');
+                setProjects(response.data.data);
             } catch (error) {
                 console.log("Error getting projects:", error);
             }
@@ -32,12 +33,30 @@ function Home() {
         e.preventDefault();
         console.log({ projectName });
 
+        if (!projectName || projectName.trim() === '') {
+            console.error("Project name is required");
+            return;
+        }
+
         try {
-            const response = await axiosInstance.post('/projects/create', { name: projectName });
-            console.log(response.data);
+            const response = await axiosInstance.post('/projects/create', {
+                payload: {
+                    name: projectName
+                }
+            });
+
+            console.log("res 00", response.data)
+
+            if (response.data.success) {
+                console.log("Project created successfully:", response.data);
+                setIsModalOpen(false);
+            } else {
+                console.error("Failed to create project:", response.data.message);
+            }
             setIsModalOpen(false);
         } catch (error) {
-            console.error(error.response.data);
+            console.error("Error creating project:", error.response?.data || error.message);
+            console.error(error);
         }
     }
 
@@ -68,13 +87,13 @@ function Home() {
                     <h2 className="text-2xl font-bold mb-4 text-center">your Projects</h2>
                     <div className="projects grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
                         {projects.map((project) => (
-                            <div key={project._id}
-                                 onClick={() => navigate(`/project`, { state: { project } })}
-                                 className="project flex flex-col w-full md:w-[200px] justify-center gap-4 p-4 border border-gray-500 rounded cursor-pointer hover:bg-gray-600 hover:text-white">
+                            <div key={project.id}
+                                onClick={() => navigate(`/project`, { state: { project } })}
+                                className="project flex flex-col w-full md:w-[200px] justify-center gap-4 p-4 border border-gray-500 rounded cursor-pointer hover:bg-gray-600 hover:text-white">
                                 <span className="ml-2">{project.name}</span>
                                 <div className="flex items-center">
                                     <p><small> <i className="ri-user-line"></i> Collaborators </small>:</p>
-                                    <span className="ml-2">{project.users.length}</span>
+                                    <span className="ml-2">{project.users?.length || 0}</span>
                                 </div>
                             </div>
                         ))}

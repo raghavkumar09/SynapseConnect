@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as userController from "../controllers/user.controller.js";
-import { authUser } from "../middleware/auth.middleware.js";
+import { valiadateAccessToken } from "../middleware/auth.middleware.js";
 import { body } from "express-validator";
 
 const router = Router();
@@ -18,10 +18,10 @@ router.post("/login",
     userController.loginController
 );
 
-router.get("/profile", authUser, userController.getUserProfileController);
+router.get("/profile", valiadateAccessToken, userController.getUserProfileController);
 
-router.post("/logout", authUser, userController.logoutController);
+// router.post("/logout", authUser, userController.logoutController);
 
-router.get("/all", authUser, userController.getAllUsersController);
+router.get("/all", valiadateAccessToken, userController.getAllUsersController);
 
 export default router;

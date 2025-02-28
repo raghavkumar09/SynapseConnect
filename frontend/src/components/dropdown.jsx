@@ -32,7 +32,7 @@ export function Dropdown() {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild className="">
-                <User className="h-5 w-5 bg-gray-600 rounded-full" p-20/>
+                <User className="h-8 w-8 bg-gray-400 rounded-full p-[0.3125rem]" />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>

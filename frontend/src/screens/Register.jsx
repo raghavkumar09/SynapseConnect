@@ -16,11 +16,13 @@ export default function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axiosInstance.post('/users/register', { email, password });
-            console.log(response.data);
+            const response = await axiosInstance.post('/users/register', {
+                payload: { email, password }
+            });
 
             localStorage.setItem('token', response.data.token);
-            setUser(response.data.user);
+            setUser(response.data.data);
+            
             navigate('/');
         } catch (error) {
             console.error(error);

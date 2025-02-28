@@ -23,7 +23,7 @@ function Project() {
             const fetchUsers = async () => {
                 try {
                     const response = await axiosInstance.get('/users/all');
-                    const usersData = response.data.users;
+                    const usersData = response.data.data;
                     setUsers(usersData);
                 } catch (error) {
                     console.error("Error fetching users:", error);
@@ -48,7 +48,7 @@ function Project() {
     };
 
     useEffect(() => {
-        socketConnectionInit(project._id);
+        socketConnectionInit(project.id);
 
         receiveMessage('project-message', data => {
             // appendIncommingMessage(data);
@@ -59,15 +59,15 @@ function Project() {
 
         const fetchProject = async () => {
             try {
-                const response = await axiosInstance.get(`/projects/get-project/${location.state.project._id}`);
-                const projectData = response.data.project;
+                const response = await axiosInstance.get(`/projects/get-project/${location.state.project.id}`);
+                const projectData = response.data.data;
                 setProject(projectData);
             } catch (error) {
                 console.error("Error fetching project:", error);
             }
         };
         fetchProject();
-    }, [location.state.project._id, project._id]);
+    }, [location.state.project.id, project.id]);
 
     // const appendIncommingMessage = (messageObj) => {
     //     console.log("messageObj", messageObj);
@@ -115,9 +115,12 @@ function Project() {
         const addCollaborators = async () => {
             try {
                 await axiosInstance.put('/projects/add-user', {
-                    projectId: location.state.project._id,
-                    users: selectedUsers
+                    payload : {
+                        projectId: location.state.project.id,
+                        users: selectedUsers
+                    }
                 });
+
                 setIsModalOpen(false);
             } catch (error) {
                 console.error("Error adding collaborators:", error.response?.data || error);
@@ -145,10 +148,10 @@ function Project() {
                 <div className="conversation-area pt-14 pb-10 flex-grow flex flex-col h-full relative">
                     <div ref={messagesRef} className="message-box p-1 flex-grow flex flex-col gap-1 overflow-auto max-h-full no-scrollbar">
                     {messagesList.map((msg, index) => (
-                            <div key={index} className={`${msg.sender._id === 'ai' ? 'max-w-80' : 'max-w-52'} ${msg.sender._id == user._id.toString() && 'ml-auto'}  message flex flex-col p-2 bg-gray-900 w-fit rounded-md`}>
+                            <div key={index} className={`${msg.sender.id === 'ai' ? 'max-w-80' : 'max-w-52'} ${msg.sender.id == user.id.toString() && 'ml-auto'}  message flex flex-col p-2 bg-gray-900 w-fit rounded-md`}>
                                 <small className='opacity-65 text-xs'>{msg.sender.email}</small>
                                 <div className='text-sm '>
-                                    {msg.sender._id === 'ai' ?
+                                    {msg.sender.id === 'ai' ?
                                         <p>{msg.message}</p>
                                         :
                                         <p>{msg.message}</p>
@@ -186,14 +189,13 @@ function Project() {
                     </div>
                     <div className='users flex flex-col gap-2 p-2'>
                         {project.users && project.users.map((user) => (
-                            <div key={user._id} className="user flex gap-2 justify-start items-center bg-gray-900 rounded-md p-2 w-full hover:bg-gray-500 cursor-pointer">
+                            <div key={user.id} className="user flex gap-2 justify-start items-center bg-gray-900 rounded-md p-2 w-full hover:bg-gray-500 cursor-pointer">
                                 <div className="avatar bg-gray-800 rounded-full flex justify-center items-center p-2 w-fit h-fit">
                                     <i className="ri-user-3-line absolute"></i>
                                 </div>
-                                <h2>{user.email}</h2>
+                                <h2>{user}</h2>
                             </div>
                         ))}
-
                     </div>
                 </div>
             </section>
@@ -222,11 +224,11 @@ function Project() {
                         <h2 className='text-lg mb-4'>Select Users: {selectedUsers.length}</h2>
                         <div className='users-list max-h-60 overflow-y-auto'>
                             {users.map((user) => (
-                                <div key={user._id} className="flex items-center gap-2 p-2">
+                                <div key={user.id} className="flex items-center gap-2 p-2">
                                     <input
                                         type="checkbox"
-                                        checked={selectedUsers.includes(user._id)}
-                                        onChange={() => handleUserSelect(user._id)}
+                                        checked={selectedUsers.includes(user.id)}
+                                        onChange={() => handleUserSelect(user.id)}
                                     />
                                     <span>{user.email}</span>
                                 </div>

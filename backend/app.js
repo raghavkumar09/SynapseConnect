@@ -1,13 +1,11 @@
 import express from "express";
 import morgan from "morgan";
-import connectDB from "./db/db.js";
 import userRouter from "./routes/user.route.js";
 import projectRouter from "./routes/project.route.js";
 import geminiRouter from "./routes/gemini.route.js";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-connectDB();
 const app = express();
 
 app.use(morgan("dev"));

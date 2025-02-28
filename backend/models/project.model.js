@@ -1,22 +1,40 @@
-import mongoose from "mongoose";
-import { Schema } from "mongoose";
 
-const projectSchema = new Schema({
-    name : {
-        type : String,
-        required : true,
-        unique : [true, "Project name must be unique"],
-        trim : true,
-        lowercase : true
+import sequelize from "../db/db.js";
+import { DataTypes, Model } from "sequelize";
+
+class Project extends Model {}
+
+Project.init(
+    {
+        id: {
+            type: DataTypes.UUID, // ✅ Uses UUID instead of auto-increment ID
+            defaultValue: DataTypes.UUIDV4,
+            primaryKey: true,
+        },
+        name: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            unique: {
+                args: true,
+                msg: "Project name must be unique",
+            },
+            validate: {
+                notEmpty: true,
+            },
+        },
+        users: {
+            type: DataTypes.ARRAY(DataTypes.UUID),
+            allowNull: false,
+            defaultValue: []
+        },
     },
-    users : [
-        {
-            type : mongoose.Schema.Types.ObjectId,
-            ref : "user"
-        }
-    ]
-});
+    {
+        sequelize,
+        modelName: "Project",
+        timestamps: true, // ✅ Auto-generates createdAt & updatedAt
+        underscored: true, // ✅ Makes column names `snake_case` instead of `camelCase`
+        freezeTableName: true, // ✅ Prevents Sequelize from pluralizing the table name
+    }
+)
 
-const Project = mongoose.model("project", projectSchema);
-
-export default Project;
+export { Project }

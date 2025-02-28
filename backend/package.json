@@ -22,8 +22,11 @@
     "express-validator": "^7.2.0",
     "ioredis": "^5.4.2",
     "jsonwebtoken": "^9.0.2",
+    "moment-timezone": "^0.5.47",
     "mongoose": "^8.9.2",
     "morgan": "^1.10.0",
+    "pg": "^8.13.3",
+    "sequelize": "^6.37.5",
     "socket.io": "^4.8.1"
   }
 }

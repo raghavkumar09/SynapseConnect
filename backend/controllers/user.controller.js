@@ -1,66 +1,89 @@
-import userModel from "../models/user.model.js";
-import * as userService from "../services/user.service.js";
 import { validationResult } from "express-validator";
-import redisClient from "../services/redis.service.js";
-
-export const createUserController = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-    }
-    try {
-        const user = await userService.createUser(req.body);
-
-        const token = user.generateToken();
-
-        delete user._doc.password;
-        res.status(201).json({ user, token });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-}
+import { UserManager } from "../data/manager/user.manager.js";
+import { generateAuthToken } from "../middleware/auth.middleware.js";
+import bcrypt from 'bcrypt';
 
 export const loginController = async (req, res) => {
-    const errors = validationResult(req);
+    const errors = validationResult(req.body.payload);
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
     try {
-        const { email, password } = req.body;
-        const user = await userModel.findOne({ email }).select("+password");
-        if (!user) {
-            return res.status(401).json({ error: "Invalid credentials" });
+        if (!req.body.payload) {
+            return res.status(406).json({ success: false, message: 'Request data missing' });
         }
 
-        const isValid = await user.isValidPassword(password);
-        if (!isValid) {
-            return res.status(401).json({ error: "Invalid credentials" });
+        let params = req.body.payload;
+        let searchQuery = {
+            where: {
+                email: params.email
+            },
+            attributes: ['id', 'email', 'password', 'status'] // show in frontend or user profile
+        };
+
+        let userProfile = await UserManager.getUserDetail(searchQuery);
+        if (!userProfile) {
+            return res.status(404).json({ success: false, message: 'User not found' });
         }
 
-        const token = user.generateToken();
-        res.status(200).json({ user, token });
+        if (userProfile.status == "Inactive") {
+            return res.status(404).json({ success: false, message: 'Invalid User Please Contact the Administrator' })
+        }
+
+        let isValidPassword = await bcrypt.compare(params.password, userProfile.password);
+        if (!isValidPassword) {
+            return res.status(404).json({ success: false, message: 'Invalid Password' });
+        }
+
+        const token = await generateAuthToken(userProfile);
+        return res.status(200).json({ success: true, message: 'Login successful', token: token, data: userProfile });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(409).json({ success: false, message: error.message })
     }
 }
 
-export const getUserProfileController = async (req, res) => {
-    try {
-        console.log(req.user);
-        res.status(200).json({ user: req.user });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+export const createUserController = async (req, res) => {
+    const errors = validationResult(req.body.payload);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
     }
-}
-
-export const logoutController = async (req, res) => {
     try {
-        const token = req.cookies?.token || req.headers.authorization?.split(" ")[1];
-        await redisClient.set(token, "logout", "EX", 60 * 60 * 24); // 1 day
+        if (!req.body.payload) {
+            return res.status(406).json({ success: false, message: 'Request data missing' });
+        }
+
+        let params = req.body.payload;
+        let searchQuery = {
+            where: {
+                email: params.email
+            }
+        }
+
+        let userProfile = await UserManager.getUserDetail(searchQuery);
         
-        res.status(200).json({ message: "Logout successful" });
+        if (userProfile) {
+            return res.status(404).json({ success: false, message: 'User already registered with same email' })
+        }
+
+        const salt = bcrypt.genSaltSync(10);
+        const passwordHash = bcrypt.hashSync(params.password, salt);
+        const payload = {
+            email: params.email,
+            password: passwordHash,
+            salt: salt
+        }
+        let user = await UserManager.createUser(payload);
+
+        let tokenPlayload = {
+            id: user.id,
+            email: user.email
+        }
+
+        let token = await generateAuthToken(tokenPlayload);
+
+        return res.status(201).json({ success: true, message: 'User created successfully', data: user, token: token });
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        res.status(409).json({ success: false, message: error.message })
     }
 }
 
@@ -69,10 +92,17 @@ export const getAllUsersController = async (req, res) => {
     if (!errors.isEmpty()) {
         return res.status(400).json({ errors: errors.array() });
     }
-
     try {
-        const users = await userService.getAllUsers({ userId: req.user._id });
-        res.status(200).json({ users });
+        let users = await UserManager.getAllUsers();
+        return res.status(200).json({ success: true, message: 'Users fetched successfully', data: users });
+    } catch (error) {
+        res.status(409).json({ success: false, message: error.message })
+    }
+}
+
+export const getUserProfileController = async (req, res) => {
+    try {
+        return res.status(200).json({ success: true, message: 'Users fetched successfully', data: req.user });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }

@@ -44,7 +44,7 @@ export function ProjectCard({
                     onClick={handleCreateProject}
                     onKeyPress={(e) => {
                         if (e.key === 'Enter') {
-                            handleSendMessage();
+                            handleCreateProject();
                         }
                     }}
                 >Create</Button>
